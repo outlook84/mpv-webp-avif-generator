@@ -40,7 +40,7 @@ scoop install mpv ffmpeg
      `C:\Users\<YourUser>\scoop\apps\mpv\current\portable_config\scripts\`
 
 2. Ensure [FFmpeg](https://ffmpeg.org/) is installed and available in your system PATH.
-   - Or edit the `ffmpeg_path` option in the script to point to your FFmpeg executable.
+   - Or edit the `ffmpeg_path` option to point to your FFmpeg executable.
 
 ## Usage
 

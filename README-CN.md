@@ -39,7 +39,7 @@ scoop install mpv ffmpeg
      `C:\Users\<你的用户名>\scoop\apps\mpv\current\portable_config\scripts\`
 
 2. 确保 [FFmpeg](https://ffmpeg.org/) 已安装并加入系统 PATH。  
-   或在脚本配置中设置 `ffmpeg_path` 为 FFmpeg 的完整路径。
+   或在配置文件中设置 `ffmpeg_path` 为 FFmpeg 的完整路径。
 
 ## 使用方法
 
