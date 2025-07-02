@@ -60,10 +60,10 @@ ffmpeg_path=ffmpeg         # Path to ffmpeg executable
 dir=~~desktop/             # Output directory (default: desktop)
 rez=640                    # Output width (pixels), keeps aspect ratio
 fps=0                      # 0 = use source video fps
+loop=0                     # Animation loop count (0 = infinite)
 lossless=0                 # WebP: 0=lossy, 1=lossless
 quality=90                 # WebP: 0-100 (higher = better quality)
 compression_level=5        # WebP: 0-6 (higher = smaller size, slower)
-loop=0                     # WebP: animation loop count (0 = infinite)
 avif_quality=30            # AVIF: CRF value (lower = better quality)
 avif_preset=3              # AVIF: encoding preset, 0-13 (lower is higher quality and slower)
 ```

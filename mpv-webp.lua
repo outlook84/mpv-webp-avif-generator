@@ -183,9 +183,9 @@ function make_webp_internal(format)
     if format == "avif" then
         -- avif encoding command
         cmd = string.format(
-            "%s -y -hide_banner -loglevel error%s -i '%s' -lavfi %s -c:v libsvtav1 -crf %s -preset %s -an%s '%s'",
+            "%s -y -hide_banner -loglevel error%s -i '%s' -lavfi %s -c:v libsvtav1 -crf %s -preset %s -an%s -loop %s '%s'",
             options.ffmpeg_path, ss_pos, pathname, trim_filters,
-            options.avif_quality, options.avif_preset, ss_out, outname
+            options.avif_quality, options.avif_preset, ss_out, options.loop, outname
         )
     else
         -- webp encoding command

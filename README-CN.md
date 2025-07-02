@@ -58,10 +58,10 @@ ffmpeg_path=ffmpeg         # ffmpeg 可执行文件路径
 dir=~~desktop/             # 输出目录（默认桌面）
 rez=640                    # 输出宽度（像素），自动保持比例
 fps=0                      # 0 = 使用源视频帧率
+loop=0                     # 动画循环次数（0=无限循环）
 lossless=0                 # WebP: 0=有损，1=无损
 quality=90                 # WebP: 0-100（越高越清晰）
 compression_level=5        # WebP: 0-6（越高体积越小，速度越慢）
-loop=0                     # WebP: 动画循环次数（0=无限循环）
 avif_quality=30            # AVIF: CRF 数值（越低越清晰）
 avif_preset=3              # AVIF: -preset 参数，0-13，数值越低质量越高但速度越慢
 ```
