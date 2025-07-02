@@ -45,7 +45,7 @@ scoop install mpv ffmpeg
 
 1. **在 mpv 里用 `l` 键设置 A-B 循环**，A 为起点，B 为终点（`l` 是 mpv 默认的 A-B 循环按键）。
 2. 按 **Ctrl+w** 导出动画 WebP。
-3. 按 **Ctrl+a** 导出动画 AVIF。
+3. 按 **Alt+w** 导出动画 AVIF。
 
 导出时右上角会出现一个小圆点，导出完成后文件会自动保存到桌面（或你设置的目录）。
 
@@ -76,7 +76,7 @@ avif_preset=3              # AVIF: -preset 参数，0-13，数值越低质量越
 
 ```
 Ctrl+w script-binding make_webp_from_abloop
-Ctrl+a script-binding make_avif_from_abloop
+Alt+w script-binding make_avif_from_abloop
 ```
 
 这样就可以把生成 webp 和 avif 的快捷键自定义为你喜欢的按键组合。  

@@ -47,7 +47,7 @@ scoop install mpv ffmpeg
 1. **Set the A-B loop** in mpv to mark the start (A) and end (B) of the segment you want to export.
    - Use `l` to set point A and `l` again to set point B (default mpv key binding for A-B loop).
 2. Press **Ctrl+w** to generate an animated WebP.
-3. Press **Ctrl+a** to generate an animated AVIF.
+3. Press **Alt+w** to generate an animated AVIF.
 
 A small dot will appear in the top-right corner while the export is in progress. The resulting file will be saved to your desktop (or the directory set in the script options).
 
@@ -79,7 +79,7 @@ To do this:
 
 ```
 Ctrl+w script-binding make_webp_from_abloop
-Ctrl+a script-binding make_avif_from_abloop
+Alt+w script-binding make_avif_from_abloop
 ```
 
 This allows you to customize the hotkeys for generating webp and avif to any key combination you prefer.  
