@@ -6,8 +6,8 @@
 
 ![sample](./少女革命ウテナ.アドゥレセンス黙示録.avif)
 
-> **注意：** 本脚本仅适用于 **Windows**。  
-> 理论上添加 Linux/Mac 支持并不难，但我没有环境测试。欢迎 PR！
+> **注意：** 本脚本现已支持 **Windows** 和 **Linux**。  
+> macOS 我没有测试环境，欢迎 PR！
 
 > **致谢原作者：** https://github.com/DonCanjas/mpv-webp-generator
 
@@ -15,8 +15,8 @@
 
 - 将当前设置的 A-B 循环导出为动画 WebP 或 AVIF。
 - 输出分辨率、质量、编码参数可配置。
-- 支持内嵌和外挂字幕。（仅测试过 SRT 和 ASS 字幕）
-- 输出文件自动命名，默认保存到桌面。
+- 支持内嵌和外挂字幕。（已测试 SRT 和 ASS 字幕）
+- 输出文件自动命名，默认保存到桌面（Windows）或用户主目录（Linux）。
 
 ## 依赖
 
@@ -33,12 +33,15 @@ scoop install mpv ffmpeg
 
 ## 安装
 
-1. 下载 `mpv-webp.lua`，放到 mpv 的 `scripts` 目录下：
-   - Windows: `%APPDATA%\mpv\scripts\`
+1. 根据你的平台下载对应的脚本：
+   - **Windows:** `mpv-webp.lua`
+   - **Linux:** `mpv-webp-linux.lua`
+2. 把脚本放到 mpv 的 `scripts` 目录下：
+   - **Windows:** `%APPDATA%\mpv\scripts\`
    - 如果你用 Scoop 安装 mpv，路径一般是：  
      `C:\Users\<你的用户名>\scoop\apps\mpv\current\portable_config\scripts\`
-
-2. 确保 [FFmpeg](https://ffmpeg.org/) 已安装并加入系统 PATH。  
+   - **Linux:** `~/.config/mpv/scripts/`
+3. 确保 [FFmpeg](https://ffmpeg.org/) 已安装并加入系统 PATH。  
    或在配置文件中设置 `ffmpeg_path` 为 FFmpeg 的完整路径。
 
 ## 使用方法
@@ -47,7 +50,7 @@ scoop install mpv ffmpeg
 2. 按 **Ctrl+w** 导出动画 WebP。
 3. 按 **Alt+w** 导出动画 AVIF。
 
-导出时右上角会出现一个小圆点，导出完成后文件会自动保存到桌面（或你设置的目录）。
+导出时右上角会出现一个小圆点，导出完成后文件会自动保存到桌面（Windows）或主目录（Linux），或你设置的目录。
 
 ## 配置
 
@@ -55,7 +58,7 @@ scoop install mpv ffmpeg
 
 ```ini
 ffmpeg_path=ffmpeg         # ffmpeg 可执行文件路径
-dir=~~desktop/             # 输出目录（默认桌面）
+dir=~~desktop/             # 输出目录（Windows 默认桌面，Linux 默认主目录）
 rez=640                    # 输出宽度（像素），自动保持比例
 fps=0                      # 0 = 使用源视频帧率
 loop=0                     # 动画循环次数（0=无限循环）
@@ -65,13 +68,18 @@ compression_level=5        # WebP: 0-6（越高体积越小，速度越慢）
 avif_quality=30            # AVIF: CRF 数值（越低越清晰）
 avif_preset=3              # AVIF: -preset 参数，0-13，数值越低质量越高但速度越慢
 ```
-**示例路径：**  
-- `%APPDATA%\mpv\script-opts\webp.conf`  
+**示例配置文件路径：**  
+- Windows: `%APPDATA%\mpv\script-opts\webp.conf`  
 - Scoop: `C:\Users\<你的用户名>\scoop\apps\mpv\current\portable_config\script-opts\webp.conf`
+- Linux: `~/.config/mpv/script-opts/webp.conf`
 
 ## 更改快捷键
 
-1. 找到你的 `input.conf` 文件（通常在 `%APPDATA%\mpv\input.conf` 或 `portable_config\input.conf`）。
+你可以通过编辑 `input.conf` 文件自定义快捷键：
+
+1. 找到你的 `input.conf` 文件：  
+   - **Windows:** `%APPDATA%\mpv\input.conf`（默认）或 `C:\Users\<你的用户名>\scoop\apps\mpv\current\portable_config\input.conf`（Scoop 安装）
+   - **Linux:** `~/.config/mpv/input.conf`
 2. 添加或修改如下内容：
 
 ```
@@ -85,4 +93,4 @@ Alt+w script-binding make_avif_from_abloop
 ## 已知问题
 
 - 关闭 mpv 后，脚本启动的 ffmpeg 进程不会自动退出。
-- 如果 ffmpeg 卡住，需要手动在任务管理器中结束 `ffmpeg.exe` 进程。
+- 如果 ffmpeg 卡住，需要手动结束正在运行的 `ffmpeg` 进程。

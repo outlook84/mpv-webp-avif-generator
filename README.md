@@ -6,8 +6,8 @@ A [mpv](https://mpv.io/) user script to quickly generate animated **WebP** or **
 
 ![sample](./少女革命ウテナ.アドゥレセンス黙示録.avif)
 
-> **Note:** This script is intended for **Windows**.  
-> Support for Linux/Mac is not difficult to add, but I do not have an environment to test.  PRs are welcome!
+> **Note:** This script now supports both **Windows** and **Linux**.  
+> For macOS, I do not have a test environment. Contributions are welcome!
 
 > **Thanks to the original author:** https://github.com/DonCanjas/mpv-webp-generator
 
@@ -15,15 +15,15 @@ A [mpv](https://mpv.io/) user script to quickly generate animated **WebP** or **
 
 - Export the currently set A-B loop as an animated WebP or AVIF.
 - Output resolution, quality, and encoding options are configurable.
-- Supports embedded and external subtitles. (Only tested with SRT and ASS subtitles)
-- Output files are automatically named and saved to your desktop (by default).
+- Supports embedded and external subtitles. (Tested with SRT and ASS subtitles)
+- Output files are automatically named and saved to your desktop (Windows) or home directory (Linux) by default.
 
 ## Requirements
 
 - [mpv media player](https://mpv.io/)
 - [FFmpeg](https://ffmpeg.org/)
 
-### Quick Install (using [Scoop](https://scoop.sh/))
+### Quick Install (using [Scoop](https://scoop.sh/), Windows only)
 
 On Windows, you can easily install mpv and FFmpeg using [Scoop](https://scoop.sh/):
 
@@ -33,13 +33,15 @@ scoop install mpv ffmpeg
 
 ## Installation
 
-1. Download `mpv-webp.lua` and place it in your `scripts` directory:
-   - Windows: `%APPDATA%\mpv\scripts\`
-   - If you installed mpv with Scoop, the path is usually: 
-
+1. Download the appropriate script for your platform:
+   - **Windows:** `mpv-webp.lua`
+   - **Linux:** `mpv-webp-linux.lua`
+2. Place the script in your `scripts` directory:
+   - **Windows:** `%APPDATA%\mpv\scripts\`
+   - If you installed mpv with Scoop (Windows), the path is usually:  
      `C:\Users\<YourUser>\scoop\apps\mpv\current\portable_config\scripts\`
-
-2. Ensure [FFmpeg](https://ffmpeg.org/) is installed and available in your system PATH.
+   - **Linux:** `~/.config/mpv/scripts/`
+3. Ensure [FFmpeg](https://ffmpeg.org/) is installed and available in your system PATH.
    - Or edit the `ffmpeg_path` option to point to your FFmpeg executable.
 
 ## Usage
@@ -49,7 +51,7 @@ scoop install mpv ffmpeg
 2. Press **Ctrl+w** to generate an animated WebP.
 3. Press **Alt+w** to generate an animated AVIF.
 
-A small dot will appear in the top-right corner while the export is in progress. The resulting file will be saved to your desktop (or the directory set in the script options).
+A small dot will appear in the top-right corner while the export is in progress. The resulting file will be saved to your desktop (Windows) or home directory (Linux), or the directory set in the script options.
 
 ## Options
 
@@ -57,7 +59,7 @@ You can configure these options in the `webp.conf` file located in your `script-
 
 ```ini
 ffmpeg_path=ffmpeg         # Path to ffmpeg executable
-dir=~~desktop/             # Output directory (default: desktop)
+dir=~~desktop/             # Output directory (default: desktop on Windows, ~ on Linux)
 rez=640                    # Output width (pixels), keeps aspect ratio
 fps=0                      # 0 = use source video fps
 loop=0                     # Animation loop count (0 = infinite)
@@ -67,14 +69,18 @@ compression_level=5        # WebP: 0-6 (higher = smaller size, slower)
 avif_quality=30            # AVIF: CRF value (lower = better quality)
 avif_preset=3              # AVIF: encoding preset, 0-13 (lower is higher quality and slower)
 ```
-**Example path:**  
-- `%APPDATA%\mpv\script-opts\webp.conf`  
+**Example config file locations:**  
+- Windows: `%APPDATA%\mpv\script-opts\webp.conf`  
 - Scoop: `C:\Users\<YourUser>\scoop\apps\mpv\current\portable_config\script-opts\webp.conf`
+- Linux: `~/.config/mpv/script-opts/webp.conf`
 
 You can change the default hotkeys by editing your `input.conf` file.  
 To do this:
 
-1. Find your `input.conf` file (usually in `%APPDATA%\mpv\input.conf` or `portable_config\input.conf`).
+1. Find your `input.conf` file:  
+   - **Windows:** `%APPDATA%\mpv\input.conf`
+   - **Scoop:** `C:\Users\<YourUser>\scoop\apps\mpv\current\portable_config\input.conf`  
+   - **Linux:** `~/.config/mpv/input.conf`
 2. Add or modify the following lines:
 
 ```
@@ -88,5 +94,4 @@ See [mpv input.conf documentation](https://mpv.io/manual/master/#input-conf) for
 ## Known Issues
 
 - After closing mpv, any running ffmpeg processes started by this script will **not** automatically exit.
-- If ffmpeg hangs or gets stuck, you will need to manually kill any running `ffmpeg.exe` process.
-
+- If ffmpeg hangs or gets stuck, you will need to manually kill any running `ffmpeg` process.
