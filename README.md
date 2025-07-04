@@ -82,7 +82,7 @@ avif_preset=3              # AVIF: encoding preset, 0-13 (lower is higher qualit
   > ⚠️ **Note:** Using `libplacebo` requires hardware and driver support for Vulkan. Ensure that:
   >
   > - Your GPU supports Vulkan (most AMD, Intel, and NVIDIA GPUs released in the last 10 years do)
-  > - Vulkan drivers are properly installed on your system
+  > - GPU drivers with Vulkan support are properly installed on your system
   > - Your FFmpeg build includes `libplacebo` with frame_mixer support enabled and Vulkan support
   > - If you installs FFmpeg via Scoop on Windows，it already includes libplacebo support.
   > - On Linux, you can download static-built FFmpeg which includes libplacebo from here: 
