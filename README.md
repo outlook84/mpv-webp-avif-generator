@@ -60,6 +60,7 @@ You can configure these options in the `webp.conf` file located in your `script-
 ```ini
 ffmpeg_path=ffmpeg         # Path to ffmpeg executable
 dir=~~desktop/             # Output directory (default: desktop on Windows, ~ on Linux)
+libplacebo=no              # GPU-based libplacebo filter (yes = enable, no = disable)
 rez=640                    # Output width (pixels), keeps aspect ratio
 fps=0                      # 0 = use source video fps
 max_fps=0                  # Maximum output frame rate，0 = no limit
@@ -70,6 +71,23 @@ compression_level=5        # WebP: 0-6 (higher = smaller size, slower)
 avif_quality=30            # AVIF: CRF value (lower = better quality)
 avif_preset=3              # AVIF: encoding preset, 0-13 (lower is higher quality and slower)
 ```
+
+### libplacebo Option Explained
+
+`libplacebo=yes`: Enables libplacebo filter in FFmpeg, which uses GPU acceleration via Vulkan. This enables advanced features such as:
+
+  - Debanding
+  - Frame interpolation (e.g., 30fps → 60fps)
+
+  > ⚠️ **Note:** Using `libplacebo` requires hardware and driver support for Vulkan. Ensure that:
+  >
+  > - Your GPU supports Vulkan (most AMD, Intel, and NVIDIA GPUs released in the last 10 years do)
+  > - Vulkan drivers are properly installed on your system
+  > - Your FFmpeg build includes `libplacebo` with frame_mixer support enabled and Vulkan support
+  > - If you installs FFmpeg via Scoop on Windows，it already includes libplacebo support.
+  > - On Linux, you can download static-built FFmpeg which includes libplacebo from here: 
+      https://github.com/yt-dlp/FFmpeg-Builds/releases/tag/latest
+
 **Example config file locations:**  
 - Windows: `%APPDATA%\mpv\script-opts\webp.conf`  
 - Scoop: `C:\Users\<YourUser>\scoop\apps\mpv\current\portable_config\script-opts\webp.conf`

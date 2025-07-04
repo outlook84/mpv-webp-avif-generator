@@ -16,6 +16,7 @@ local utils = require "mp.utils"
 local options = {
     ffmpeg_path = "ffmpeg",
     dir = "~/",
+    libplacebo = false,      -- Use libplacebo for scaling, requires libplacebo to be compiled with ffmpeg
     rez = 640,               -- Output resolution, in pixels, width, keep aspect ratio
     fps = 0,                 -- 0 means use source video fps
     max_fps = 0,             -- Max frame rate option, 0 means no limit
@@ -29,35 +30,48 @@ local options = {
 
 read_options(options, "webp")
 
-
 -- Determine fps behavior
 local function filters()
-
     local target_fps = tonumber(options.fps) or 0
     local max_fps = tonumber(options.max_fps) or 0
+
+    -- Prefer container fps, fallback to codec fps
+    local current_fps = tonumber(mp.get_property("container-fps")) or 0
+    if current_fps == 0 then
+        current_fps = tonumber(mp.get_property("fps")) or 0
+    end
 
     if target_fps <= 0 then
         target_fps = 0
     end
 
-    -- Apply max frame rate limit
-    if max_fps > 0 then
-        if target_fps == 0 or target_fps > max_fps then
-            target_fps = max_fps
-        end
+    if target_fps == 0 and max_fps > 0 and current_fps > max_fps then
+        target_fps = max_fps
+    elseif max_fps > 0 and target_fps > max_fps then
+        target_fps = max_fps
     end
 
-    if target_fps == 0 then
-        -- No fps limit, ffmpeg will use source video fps
-        return string.format(
-            "zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
-            options.rez
-        )
+    if options.libplacebo then
+        local base = string.format("libplacebo=w=%s:h=-1", options.rez)
+        local deband = ",libplacebo=deband=true"
+
+        local mixer = ""
+        if target_fps > 0 then
+            mixer = string.format(",libplacebo=frame_mixer=mitchell_clamp:fps=%s", target_fps)
+        end
+        return base .. deband .. mixer .. ",setsar=1/1"
     else
-        return string.format(
-            "fps=%s,zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
-            target_fps, options.rez
-        )
+        if target_fps == 0 then
+            return string.format(
+                "zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
+                options.rez
+            )
+        else
+            return string.format(
+                "fps=%s,zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
+                target_fps, options.rez
+            )
+        end
     end
 end
 
@@ -204,7 +218,16 @@ function make_webp_internal(format)
     end
 
     local cmd_args = {options.ffmpeg_path, "-y", "-hide_banner", "-loglevel", "error"}
-    for _, v in ipairs(split_args(ss_pos)) do table.insert(cmd_args, v) end
+
+    if options.libplacebo then
+        table.insert(cmd_args, "-init_hw_device")
+        table.insert(cmd_args, "vulkan")
+    end
+
+    for _, v in ipairs(split_args(ss_pos)) do
+        table.insert(cmd_args, v)
+    end
+
     table.insert(cmd_args, "-i")
     table.insert(cmd_args, pathname)
     table.insert(cmd_args, "-lavfi")

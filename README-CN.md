@@ -59,6 +59,7 @@ scoop install mpv ffmpeg
 ```ini
 ffmpeg_path=ffmpeg         # ffmpeg 可执行文件路径
 dir=~~desktop/             # 输出目录（Windows 默认桌面，Linux 默认主目录）
+libplacebo=no              # 是否启用基于 GPU 的 libplacebo 滤镜（yes = 启用，no = 禁用）
 rez=640                    # 输出宽度（像素），自动保持比例
 fps=0                      # 0 = 使用源视频帧率
 max_fps=0                  # 最大输出帧率（0=不限制）
@@ -69,6 +70,22 @@ compression_level=5        # WebP: 0-6（越高体积越小，速度越慢）
 avif_quality=30            # AVIF: CRF 数值（越低越清晰）
 avif_preset=3              # AVIF: -preset 参数，0-13，数值越低质量越高但速度越慢
 ```
+### libplacebo 选项说明
+
+`libplacebo=yes`：启用 FFmpeg 中的 libplacebo 滤镜，使用 Vulkan 实现 GPU 加速。这允许启用高级功能，例如：
+
+- 去色带（Debanding）
+- 帧率插值（例如：30fps → 60fps）
+
+⚠️ 注意：使用 libplacebo 需要硬件和驱动支持 Vulkan。请确保：
+
+- 你的显卡支持 Vulkan（过去十年发布的大多数 AMD、Intel 和 NVIDIA 显卡都支持）
+- 系统中正确安装了 Vulkan 驱动
+- 你的 FFmpeg 构建版本包含启用了 frame_mixer 支持的 libplacebo，并且支持 Vulkan
+- 如果你在 Windows 上通过 Scoop 安装 FFmpeg，它已经包含 libplacebo 支持。
+- 在 Linux 上，你可以从以下链接下载包含 libplacebo 的静态构建版本 FFmpeg：
+  👉 [https://github.com/yt-dlp/FFmpeg-Builds/releases/tag/latest](https://github.com/yt-dlp/FFmpeg-Builds/releases/tag/latest)
+
 **示例配置文件路径：**  
 - Windows: `%APPDATA%\mpv\script-opts\webp.conf`  
 - Scoop: `C:\Users\<你的用户名>\scoop\apps\mpv\current\portable_config\script-opts\webp.conf`
