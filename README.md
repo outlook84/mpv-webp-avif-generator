@@ -62,6 +62,7 @@ ffmpeg_path=ffmpeg         # Path to ffmpeg executable
 dir=~~desktop/             # Output directory (default: desktop on Windows, ~ on Linux)
 rez=640                    # Output width (pixels), keeps aspect ratio
 fps=0                      # 0 = use source video fps
+max_fps=0                  # Maximum output frame rate，0 = no limit
 loop=0                     # Animation loop count (0 = infinite)
 lossless=0                 # WebP: 0=lossy, 1=lossless
 quality=90                 # WebP: 0-100 (higher = better quality)

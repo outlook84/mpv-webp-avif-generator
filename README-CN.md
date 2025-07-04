@@ -61,6 +61,7 @@ ffmpeg_path=ffmpeg         # ffmpeg 可执行文件路径
 dir=~~desktop/             # 输出目录（Windows 默认桌面，Linux 默认主目录）
 rez=640                    # 输出宽度（像素），自动保持比例
 fps=0                      # 0 = 使用源视频帧率
+max_fps=0                  # 最大输出帧率（0=不限制）
 loop=0                     # 动画循环次数（0=无限循环）
 lossless=0                 # WebP: 0=有损，1=无损
 quality=90                 # WebP: 0-100（越高越清晰）

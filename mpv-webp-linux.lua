@@ -18,6 +18,7 @@ local options = {
     dir = "~/",
     rez = 640,               -- Output resolution, in pixels, width, keep aspect ratio
     fps = 0,                 -- 0 means use source video fps
+    max_fps = 0,             -- Max frame rate option, 0 means no limit
     lossless = 0,            -- webp compression parameter: 0=lossy, 1=lossless
     quality = 90,            -- webp compression parameter: 0-100, higher is better quality
     compression_level = 5,   -- webp compression parameter: 0-6, higher means smaller size but slower
@@ -31,22 +32,31 @@ read_options(options, "webp")
 
 -- Determine fps behavior
 local function filters()
-    if options.fps == 0 then
-        -- No fps filter, ffmpeg will use source video fps
+
+    local target_fps = tonumber(options.fps) or 0
+    local max_fps = tonumber(options.max_fps) or 0
+
+    if target_fps <= 0 then
+        target_fps = 0
+    end
+
+    -- Apply max frame rate limit
+    if max_fps > 0 then
+        if target_fps == 0 or target_fps > max_fps then
+            target_fps = max_fps
+        end
+    end
+
+    if target_fps == 0 then
+        -- No fps limit, ffmpeg will use source video fps
         return string.format(
             "zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
-            options.rez
-        )
-    elseif type(options.fps) ~= "number" or options.fps < 1 then
-        -- Not a positive integer, default to 15
-        return string.format(
-            "fps=15,zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
             options.rez
         )
     else
         return string.format(
             "fps=%s,zscale='trunc(ih*dar/2)*2:trunc(ih/2)*2':f=spline36,setsar=1/1,zscale=%s:-1:f=spline36",
-            options.fps, options.rez
+            target_fps, options.rez
         )
     end
 end
