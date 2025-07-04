@@ -33,9 +33,7 @@ scoop install mpv ffmpeg
 
 ## Installation
 
-1. Download the appropriate script for your platform:
-   - **Windows:** `mpv-webp.lua`
-   - **Linux:** `mpv-webp-linux.lua`
+1. Download the script : [mpv-webp.lua](./mpv-webp.lua)
 2. Place the script in your `scripts` directory:
    - **Windows:** `%APPDATA%\mpv\scripts\`
    - If you installed mpv with Scoop (Windows), the path is usually:  
@@ -60,7 +58,7 @@ You can configure these options in the `webp.conf` file located in your `script-
 ```ini
 ffmpeg_path=ffmpeg         # Path to ffmpeg executable
 dir=~~desktop/             # Output directory (default: desktop on Windows, ~ on Linux)
-libplacebo=no              # GPU-based libplacebo filter (yes = enable, no = disable)
+libplacebo=no              # libplacebo filter (yes = enable, no = disable)
 rez=640                    # Output width (pixels), keeps aspect ratio
 fps=0                      # 0 = use source video fps
 max_fps=0                  # Maximum output frame rate，0 = no limit
@@ -74,15 +72,13 @@ avif_preset=3              # AVIF: encoding preset, 0-13 (lower is higher qualit
 
 ### libplacebo Option Explained
 
-`libplacebo=yes`: Enables libplacebo filter in FFmpeg, which uses GPU acceleration via Vulkan. This enables advanced features such as:
+`libplacebo=yes`: Enables libplacebo filter in FFmpeg. This enables advanced features such as:
 
   - Debanding
   - Frame interpolation (e.g., 30fps → 60fps)
 
-  > ⚠️ **Note:** Using `libplacebo` requires hardware and driver support for Vulkan. Ensure that:
+  > ⚠️ **Note:** Using `libplacebo` requires:
   >
-  > - Your GPU supports Vulkan (most AMD, Intel, and NVIDIA GPUs released in the last 10 years do)
-  > - GPU drivers with Vulkan support are properly installed on your system
   > - Your FFmpeg build includes `libplacebo` with frame_mixer support enabled and Vulkan support
   > - If you installs FFmpeg via Scoop on Windows，it already includes libplacebo support.
   > - On Linux, you can download static-built FFmpeg which includes libplacebo from here: 

@@ -4,26 +4,30 @@
 -- Usage: Set A-B loop in mpv, then press Ctrl+w to generate webp, or Alt+w to generate avif.
 
 --  Note:
---     Requires FFmpeg in PATH environment variable or edit ffmpeg_path in the script options,
---     for example, by replacing "ffmpeg" with "C:\Programs\ffmpeg\bin\ffmpeg.exe"
---  Note: 
+--     Requires FFmpeg in PATH environment variable or edit ffmpeg_path in the script options.
+--     For example: "ffmpeg" or "C:\Programs\ffmpeg\bin\ffmpeg.exe" or "/usr/bin/ffmpeg"
+--  Note:
 --     A small circle at the top-right corner is a sign that creation is happening now.
 
 require 'mp.options'
 local msg = require 'mp.msg'
 local utils = require "mp.utils"
 
+-- Detect OS
+local platform = mp.get_property('platform')
+local os_type = (platform == "windows") and "windows" or "unix"     
+
 local options = {
     ffmpeg_path = "ffmpeg",
-    dir = "~~desktop/",
+    dir = (os_type == "windows") and "~~desktop/" or "~/",
     libplacebo = false,      -- Use libplacebo for scaling, requires libplacebo to be compiled with ffmpeg
     rez = 640,               -- Output resolution, in pixels, width, keep aspect ratio
     fps = 0,                 -- 0 means use source video fps
     max_fps = 0,             -- Max frame rate option, 0 means no limit
-    loop = 0,                -- Loop count, 0 means infinite loop
     lossless = 0,            -- webp compression parameter: 0=lossy, 1=lossless
     quality = 90,            -- webp compression parameter: 0-100, higher is better quality
     compression_level = 5,   -- webp compression parameter: 0-6, higher means smaller size but slower
+    loop = 0,
     avif_quality = 30,       -- avif quality (corresponds to crf)
     avif_preset = 3          -- avif encoding preset
 }
@@ -79,7 +83,12 @@ end
 local output_directory = mp.command_native({ "expand-path", options.dir })
 -- Create output_directory if it doesn't exist
 if utils.readdir(output_directory) == nil then
-    local args = { 'powershell', '-NoProfile', '-Command', 'mkdir', output_directory }
+    local args
+    if os_type == "windows" then
+        args = { 'powershell', '-NoProfile', '-Command', 'mkdir', output_directory }
+    else
+        args = { 'mkdir', '-p', output_directory }
+    end
     local res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
     if res.status ~= 0 then
         msg.error("Failed to create webp_dir save directory "..output_directory..". Error: "..(res.error or "unknown"))
@@ -111,35 +120,39 @@ function make_webp_internal(format)
     local pathname = mp.get_property("path", "")
     local trim_filters = filters()
 
-    -- shell escape
-    function esc_for_sub(s)
-        s = string.gsub(s, [[\]], [[/]])
-        s = string.gsub(s, '"', '"\\""')
-        s = string.gsub(s, ":", [[\\:]])
-        s = string.gsub(s, "'", [[\\']])
-        s = string.gsub(s, "%[", "\\%[")
-        s = string.gsub(s, "%]", "\\%]")
-        return s
+    -- shell escape function
+    local function esc_for_sub(s)
+        if os_type == "windows" then
+            s = string.gsub(s, [[\]], [[/]])
+            s = string.gsub(s, '"', '"\\""')
+            s = string.gsub(s, ":", [[\:]])
+            s = string.gsub(s, "'", [[\\']])
+            s = string.gsub(s, "%[", "\\%[")
+            s = string.gsub(s, "%]", "\\%]")
+            return s
+        else -- unix
+            s = string.gsub(s, "'", "'\\''")
+            return "'" .. s .. "'"
+        end
     end
 
     local sid = mp.get_property_number("sid", 0)
 
     if sid > 0 then
         -- Determine currently active sub track
-
         local i = 0
         local tracks_count = mp.get_property_number("track-list/count")
         local subs_array = {}
         local external_sub_path = nil
         local selected_sub_index = nil
-        
+
         while i < tracks_count do
-            local type = mp.get_property(string.format("track-list/%d/type", i))
+            local track_type = mp.get_property(string.format("track-list/%d/type", i))
             local selected = mp.get_property(string.format("track-list/%d/selected", i))
             local external = mp.get_property(string.format("track-list/%d/external", i))
             local external_filename = mp.get_property(string.format("track-list/%d/external-filename", i))
 
-            if type == "sub" then
+            if track_type == "sub" then
                 local length = table_length(subs_array)
                 if selected == "yes" then
                     selected_sub_index = length
@@ -166,7 +179,11 @@ function make_webp_internal(format)
                     end
                 end
             end
-            trim_filters = trim_filters .. string.format(",subtitles='%s':si=%s", esc_for_sub(sub_path), sub_si)
+            if os_type == "windows" then
+                 trim_filters = trim_filters .. string.format(",subtitles='%s':si=%s", esc_for_sub(sub_path), sub_si)
+            else
+                 trim_filters = trim_filters .. string.format(",subtitles=%s:si=%s", esc_for_sub(sub_path), sub_si)
+            end
         end
     end
 
@@ -191,8 +208,6 @@ function make_webp_internal(format)
         return
     end
 
-    local copyts = ""
-
     -- Decide -ss -t parameter position
     local ss_pos, ss_out
     if sid > 0 then
@@ -203,46 +218,98 @@ function make_webp_internal(format)
         ss_out = ""
     end
 
-    local cmd
-    if format == "avif" then
-        -- avif encoding command
-        cmd = string.format(
-            "%s -y -hide_banner -loglevel error%s%s -i '%s' -lavfi %s -c:v libsvtav1 -crf %s -preset %s -an%s -loop %s '%s'",
-            options.ffmpeg_path,
-            options.libplacebo and " -init_hw_device vulkan" or "",
-            ss_pos,
-            pathname,
-            trim_filters,
-            options.avif_quality,
-            options.avif_preset,
-            ss_out,
-            options.loop,
-            outname
-        )
-    else
-        -- webp encoding command
-        cmd = string.format(
-            "%s -y -hide_banner -loglevel error%s%s -i '%s' -lavfi %s -lossless %s -q:v %s -compression_level %s -loop %s%s '%s'",
-            options.ffmpeg_path,
-            options.libplacebo and " -init_hw_device vulkan" or "",
-            ss_pos,
-            pathname,
-            trim_filters,
-            options.lossless,
-            options.quality,
-            options.compression_level,
-            options.loop,
-            ss_out,
-            outname
-        )
+    local screenx, screeny, aspect = mp.get_osd_size()
+    mp.set_osd_ass(screenx, screeny, "{\\an9}● ")
+
+    local res
+    if os_type == "windows" then
+        local cmd
+        if format == "avif" then
+            cmd = string.format(
+                "%s -y -hide_banner -loglevel error%s%s -i \"%s\" -lavfi \"%s\" -c:v libsvtav1 -crf %s -preset %s -an%s -loop %s \"%s\"",
+                options.ffmpeg_path,
+                options.libplacebo and " -init_hw_device vulkan" or "",
+                ss_pos,
+                pathname,
+                trim_filters,
+                options.avif_quality,
+                options.avif_preset,
+                ss_out,
+                options.loop,
+                outname
+            )
+        else
+            cmd = string.format(
+                "%s -y -hide_banner -loglevel error%s%s -i \"%s\" -lavfi \"%s\" -lossless %s -q:v %s -compression_level %s -loop %s%s \"%s\"",
+                options.ffmpeg_path,
+                options.libplacebo and " -init_hw_device vulkan" or "",
+                ss_pos,
+                pathname,
+                trim_filters,
+                options.lossless,
+                options.quality,
+                options.compression_level,
+                options.loop,
+                ss_out,
+                outname
+            )
+        end
+        msg.info("FFmpeg command: " .. cmd)
+        local args = { 'powershell', '-NoProfile', '-Command', cmd }
+        res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
+    else -- unix
+        local function split_args(str)
+            local t = {}
+            for arg in string.gmatch(str, "%S+") do
+                table.insert(t, arg)
+            end
+            return t
+        end
+
+        local cmd_args = {options.ffmpeg_path, "-y", "-hide_banner", "-loglevel", "error"}
+
+        if options.libplacebo then
+            table.insert(cmd_args, "-init_hw_device")
+            table.insert(cmd_args, "vulkan")
+        end
+
+        for _, v in ipairs(split_args(ss_pos)) do
+            table.insert(cmd_args, v)
+        end
+
+        table.insert(cmd_args, "-i")
+        table.insert(cmd_args, pathname)
+        table.insert(cmd_args, "-lavfi")
+        table.insert(cmd_args, trim_filters)
+
+        if format == "avif" then
+            table.insert(cmd_args, "-c:v")
+            table.insert(cmd_args, "libsvtav1")
+            table.insert(cmd_args, "-crf")
+            table.insert(cmd_args, tostring(options.avif_quality))
+            table.insert(cmd_args, "-preset")
+            table.insert(cmd_args, tostring(options.avif_preset))
+            table.insert(cmd_args, "-an")
+            table.insert(cmd_args, "-loop")
+            table.insert(cmd_args, tostring(options.loop))
+        else
+            table.insert(cmd_args, "-lossless")
+            table.insert(cmd_args, tostring(options.lossless))
+            table.insert(cmd_args, "-q:v")
+            table.insert(cmd_args, tostring(options.quality))
+            table.insert(cmd_args, "-compression_level")
+            table.insert(cmd_args, tostring(options.compression_level))
+            table.insert(cmd_args, "-loop")
+            table.insert(cmd_args, tostring(options.loop))
+        end
+
+        for _, v in ipairs(split_args(ss_out)) do table.insert(cmd_args, v) end
+        table.insert(cmd_args, outname)
+
+        msg.info("FFmpeg command args: " .. table.concat(cmd_args, " "))
+        res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = cmd_args})
     end
 
-    msg.info("FFmpeg command: " .. cmd)  -- Print final ffmpeg command to mpv log
-
-    args =  { 'powershell', '-NoProfile', '-Command', cmd }
-    local screenx, screeny, aspect = mp.get_osd_size()
-    mp.set_osd_ass(screenx, screeny, "{\\an9}● ")
-    local res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
     mp.set_osd_ass(screenx, screeny, "")
     if res.status ~= 0 then
         msg.info("Failed to create " .. ext .. ".")
