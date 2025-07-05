@@ -119,21 +119,17 @@ function make_webp_internal(format)
 
     local pathname = mp.get_property("path", "")
     local trim_filters = filters()
+    local temp_symlink_path = nil -- To store the path of the temporary symlink for cleanup
 
     -- shell escape function
     local function esc_for_sub(s)
-        if os_type == "windows" then
-            s = string.gsub(s, [[\]], [[/]])
-            s = string.gsub(s, '"', '"\\""')
-            s = string.gsub(s, ":", [[\:]])
-            s = string.gsub(s, "'", [[\\']])
-            s = string.gsub(s, "%[", "\\%[")
-            s = string.gsub(s, "%]", "\\%]")
-            return s
-        else -- unix
-            s = string.gsub(s, "'", "'\\''")
-            return "'" .. s .. "'"
-        end
+        s = string.gsub(s, [[\]], [[/]])
+        s = string.gsub(s, '"', '"\\""')
+        s = string.gsub(s, ":", [[\:]])
+        s = string.gsub(s, "'", [[\'\']])
+        s = string.gsub(s, "%[", "\\%[")
+        s = string.gsub(s, "%]", "\\%]")
+        return s
     end
 
     local sid = mp.get_property_number("sid", 0)
@@ -182,7 +178,31 @@ function make_webp_internal(format)
             if os_type == "windows" then
                  trim_filters = trim_filters .. string.format(",subtitles='%s':si=%s", esc_for_sub(sub_path), sub_si)
             else
-                 trim_filters = trim_filters .. string.format(",subtitles=%s:si=%s", esc_for_sub(sub_path), sub_si)
+                -- Unix: Use a symbolic link to avoid quoting issues with subtitle paths.
+                temp_symlink_path = "/tmp/mpv_webp_tempsub_" .. math.floor(os.clock() * 1e6)
+
+                local function get_full_path()
+                    local rel_path = mp.get_property("path")
+                    local working_dir = mp.get_property("working-directory")
+                    if rel_path:find("^/") then
+                        return rel_path
+                    else 
+                        return utils.join_path(working_dir, rel_path)
+                    end
+                end
+
+                local full_path = get_full_path()
+                local ln_args = {'ln', '-s', full_path, temp_symlink_path}
+                local ln_res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = ln_args})
+
+                if ln_res.status ~= 0 then
+                    msg.error("Failed to create symbolic link for subtitles. Error: " .. (ln_res.error or "unknown"))
+                    mp.osd_message("Error: Failed to create symlink for subs.")
+                    return
+                end
+
+                -- Using filename=... is the most robust syntax for the subtitles filter.
+                trim_filters = trim_filters .. string.format(",subtitles=filename=%s:si=%s", temp_symlink_path, sub_si)
             end
         end
     end
@@ -308,6 +328,12 @@ function make_webp_internal(format)
 
         msg.info("FFmpeg command args: " .. table.concat(cmd_args, " "))
         res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = cmd_args})
+
+        -- If a temporary symlink was created, remove it
+        if temp_symlink_path then
+            local rm_args = {'rm', '-f', temp_symlink_path}
+            local rm_res = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = rm_args})
+        end
     end
 
     mp.set_osd_ass(screenx, screeny, "")
