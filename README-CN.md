@@ -4,12 +4,14 @@
 
 一个 [mpv](https://mpv.io/) 用户脚本，可以快速将任意视频选取片段导出为动画 **WebP** 或 **AVIF**，依赖 [FFmpeg](https://ffmpeg.org/)。
 
-![sample](./少女革命ウテナ.アドゥレセンス黙示録.avif)
+![sample](./Webb_at_L2.avif)
 
 > **注意：** 本脚本现已支持 **Windows** 和 **Linux**。  
 > macOS 我没有测试环境，欢迎 PR！
 
-> **致谢原作者：** https://github.com/DonCanjas/mpv-webp-generator
+> **致谢与署名：**
+> - **示例动图来源：** [NASA/SVS](https://commons.wikimedia.org/wiki/File:Webb_at_L2_(SVS20350_-_WEBB_L2_4k_30fps_proRes).webm)
+> - **脚本原作者：** https://github.com/DonCanjas/mpv-webp-generator
 
 ## 功能
 

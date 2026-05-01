@@ -4,12 +4,14 @@
 
 A [mpv](https://mpv.io/) user script to quickly generate animated **WebP** or **AVIF** clips from any video segment using [FFmpeg](https://ffmpeg.org/).
 
-![sample](./少女革命ウテナ.アドゥレセンス黙示録.avif)
+![sample](./Webb_at_L2.avif)
 
 > **Note:** This script now supports both **Windows** and **Linux**.  
 > For macOS, I do not have a test environment. Contributions are welcome!
 
-> **Thanks to the original author:** https://github.com/DonCanjas/mpv-webp-generator
+> **Credits:**
+> - **Animation source:** [NASA/SVS](https://commons.wikimedia.org/wiki/File:Webb_at_L2_(SVS20350_-_WEBB_L2_4k_30fps_proRes).webm)
+> - **Original author:** https://github.com/DonCanjas/mpv-webp-generator
 
 ## Features
 
