@@ -2,6 +2,7 @@
 -- Requires ffmpeg.
 -- Adapted from https://github.com/DonCanjas/mpv-webp-generator
 -- Usage: Set A-B loop in mpv, then press Ctrl+w to generate webp, or Alt+w to generate avif.
+--        You can also press Ctrl+[ to set the start point and Ctrl+] to set the end point.
 
 --  Note:
 --     Requires FFmpeg in PATH environment variable or edit ffmpeg_path in the script options.
@@ -351,6 +352,67 @@ function file_exists(name)
     if f~=nil then io.close(f) return true else return false end
 end
 
+function format_time(seconds)
+    if seconds < 0 then
+        return "unset"
+    end
+
+    local total = math.floor(seconds)
+    local ms = math.floor((seconds - total) * 1000 + 0.5)
+    if ms >= 1000 then
+        total = total + 1
+        ms = 0
+    end
+    local h = math.floor(total / 3600)
+    local m = math.floor((total % 3600) / 60)
+    local s = total % 60
+
+    if h > 0 then
+        return string.format("%d:%02d:%02d.%03d", h, m, s, ms)
+    end
+    return string.format("%d:%02d.%03d", m, s, ms)
+end
+
+function set_start_time()
+    local current = mp.get_property_number("ab-loop-a", -1)
+    if current >= 0 then
+        start_time = -1
+        mp.set_property("ab-loop-a", "no")
+        mp.osd_message("Start cleared.")
+        return
+    end
+
+    local pos = mp.get_property_number("time-pos", -1)
+    if pos < 0 then
+        mp.osd_message("Cannot set start time.")
+        return
+    end
+
+    start_time = pos
+    mp.set_property_number("ab-loop-a", pos)
+    mp.osd_message("Start set: " .. format_time(pos))
+end
+
+function set_end_time()
+    local current = mp.get_property_number("ab-loop-b", -1)
+    if current >= 0 then
+        end_time = -1
+        mp.set_property("ab-loop-b", "no")
+        mp.osd_message("End cleared.")
+        return
+    end
+
+    local pos = mp.get_property_number("time-pos", -1)
+    if pos < 0 then
+        mp.osd_message("Cannot set end time.")
+        return
+    end
+
+    end_time = pos
+    mp.set_property_number("ab-loop-b", pos)
+    mp.osd_message("End set: " .. format_time(pos))
+end
+
 function make_webp_from_abloop()
     local a = mp.get_property_number("ab-loop-a", -1)
     local b = mp.get_property_number("ab-loop-b", -1)
@@ -375,5 +437,7 @@ function make_avif_from_abloop()
     make_webp_internal("avif")
 end
 
+mp.add_key_binding("Ctrl+[", "set_start_time", set_start_time)
+mp.add_key_binding("Ctrl+]", "set_end_time", set_end_time)
 mp.add_key_binding("Ctrl+w", "make_webp_from_abloop", make_webp_from_abloop)
 mp.add_key_binding("Alt+w", "make_avif_from_abloop", make_avif_from_abloop)

@@ -46,7 +46,9 @@ scoop install mpv ffmpeg
 
 ## 使用方法
 
-1. **在 mpv 里用 `l` 键设置 A-B 循环**，A 为起点，B 为终点（`l` 是 mpv 默认的 A-B 循环按键）。
+1. **在 mpv 里设置 A-B 循环**，A 为起点，B 为终点。
+   - 按 **Ctrl+[** 设置或清除起点，按 **Ctrl+]** 设置或清除终点。
+   - 也可以用 `l` 键设置 A-B 循环（`l` 是 mpv 默认的 A-B 循环按键）。
 2. 按 **Ctrl+w** 导出动画 WebP。
 3. 按 **Alt+w** 导出动画 AVIF。
 
@@ -99,11 +101,13 @@ avif_preset=3              # AVIF: -preset 参数，0-13，数值越低质量越
 2. 添加或修改如下内容：
 
 ```
+Ctrl+[ script-binding set_start_time
+Ctrl+] script-binding set_end_time
 Ctrl+w script-binding make_webp_from_abloop
 Alt+w script-binding make_avif_from_abloop
 ```
 
-这样就可以把生成 webp 和 avif 的快捷键自定义为你喜欢的按键组合。  
+这样就可以把设置起点、设置终点、生成 webp 和生成 avif 的快捷键自定义为你喜欢的按键组合。
 更多用法请参考 [mpv input.conf 文档](https://mpv.io/manual/master/#input-conf)。
 
 ## 已知问题
